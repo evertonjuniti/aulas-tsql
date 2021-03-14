@@ -47,12 +47,16 @@ namespace DemoMSSQL.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCidade(short id, Cidade cidade)
+        public async Task<ActionResult<Cidade>> PutCidade(short id, Cidade cidade)
         {
             if (id != cidade.Id)
-            {
-                return BadRequest();
-            }
+                return BadRequest("Id da Cidade não corresponde com o payload da requisição.");
+
+            if (cidade.Id_Estado <= 0)
+                return BadRequest("Id do Estado não pode ser menor ou igual a zero.");
+
+            if (cidade.Descricao == null)
+                return BadRequest("Id do Estado não pode ser nulo.");
 
             _context.Entry(cidade).State = EntityState.Modified;
 
@@ -72,7 +76,36 @@ namespace DemoMSSQL.Controllers
                 }
             }
 
-            return NoContent();
+            return cidade;
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<Cidade>> PatchCidade(short id, Cidade cidade)
+        {
+            if (cidade.Descricao == null)
+                return BadRequest("Id do Estado não pode ser nulo.");
+
+            var cidadePatch = await _context.Cidade.FindAsync(id);
+            cidadePatch.Descricao = cidade.Descricao;
+            _context.Entry(cidadePatch).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CidadeExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return cidadePatch;
         }
 
         // POST: api/Cidades
@@ -89,7 +122,7 @@ namespace DemoMSSQL.Controllers
 
         // DELETE: api/Cidades/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Cidade>> DeleteCidade(short id)
+        public async Task<ActionResult<IDictionary<string, bool>>> DeleteCidade(short id)
         {
             var cidade = await _context.Cidade.FindAsync(id);
             if (cidade == null)
@@ -100,7 +133,10 @@ namespace DemoMSSQL.Controllers
             _context.Cidade.Remove(cidade);
             await _context.SaveChangesAsync();
 
-            return cidade;
+            IDictionary<string, bool> resultado = new Dictionary<string, bool>();
+            resultado.Add("deletado", true);
+            
+            return Ok(resultado);
         }
 
         private bool CidadeExists(short id)

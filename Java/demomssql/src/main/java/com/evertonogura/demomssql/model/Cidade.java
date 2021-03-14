@@ -7,6 +7,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "Cidade")
 public class Cidade {
@@ -26,7 +28,7 @@ public class Cidade {
 	}
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Short getId() {
 		return id;
 	}
@@ -36,6 +38,7 @@ public class Cidade {
 	}
 	
 	@Column(name = "Id_Estado", nullable = false)
+	@JsonProperty("id_Estado")
 	public Short getIdEstado() {
 		return id_Estado;
 	}
