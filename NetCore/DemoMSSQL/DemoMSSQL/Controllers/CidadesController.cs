@@ -1,4 +1,6 @@
-﻿using DemoMSSQL.Models;
+﻿using DemoMSSQL.Filters;
+using DemoMSSQL.Models;
+using DemoMSSQL.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -137,6 +139,19 @@ namespace DemoMSSQL.Controllers
             resultado.Add("deletado", true);
             
             return Ok(resultado);
+        }
+
+        [HttpGet("paginado")]
+        public async Task<ActionResult<IEnumerable<Cidade>>> GetCidadesPaginado(
+            [FromQuery] PaginationFilter filter)
+        {
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var pagedData = await _context.Cidade
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                .Take(validFilter.PageSize)
+                .ToListAsync();
+            var totalRecords = await _context.Cidade.CountAsync();
+            return Ok(new PagedResponse<List<Cidade>>(pagedData, validFilter.PageNumber, validFilter.PageSize, totalRecords));
         }
 
         private bool CidadeExists(short id)
