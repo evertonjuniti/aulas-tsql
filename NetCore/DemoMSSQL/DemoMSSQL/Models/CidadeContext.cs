@@ -24,6 +24,7 @@ namespace DemoMSSQL.Models
 
                 entity.Property(e => e.Descricao)
                     .HasColumnName("Descricao")
+                    //.HasColumnType("VARCHAR")
                     .HasMaxLength(250)
                     .IsRequired();
             });
